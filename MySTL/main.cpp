@@ -1,6 +1,7 @@
 
 #include "vector.h"
 #include <stdio.h>
+#include <vector>
 
 class Test
 {
@@ -8,6 +9,7 @@ public:
 	Test()
 	{
 		index = 0;
+		memset(data, 0, 40);
 	}
 	void SetData(int *arr, int len)
 	{
@@ -29,27 +31,16 @@ private:
 
 int main()
 {
-	
-	/*BA::vector<int, int> vec1;
-	BA::vector<int, int> vec;
-	for (int i = 0; i < 20; ++i)
-	{
-		vec1.push_back(i);
-	}
-	vec = vec1;
-	for (int i = 0; i < vec.size(); ++i)
-	{
-		printf("%d", vec[i]);
-	}*/
-
-	BA::vector<Test, int> vec;
+	BA::vector<Test> vec;
 
 	int arr[5] = { 1,2,3,4,5 };
+	std::vector<Test> vec4;
 	for (int i = 0; i < 5; ++i)
 	{
 		Test tmp;
 		tmp.SetData(arr, 5);
 		vec.push_back(tmp);
+		vec4.push_back(tmp);
 	}
 
 	for (auto value : vec)
@@ -60,5 +51,38 @@ int main()
 		}
 		printf("\n");
 	}
+	try
+	{
+		vec.at(1);
+	}
+	catch(std::out_of_range e)
+	{
+		printf("%s", e.what());
+	}
+
+	Test *tmp = vec.begin();
+	tmp = vec.end();
+	tmp = vec.rbegin();
+	tmp = vec.rend();
+
+	BA::vector<Test> vec1(vec);
+	BA::vector<Test> vec2 = vec;
+	BA::vector<Test> vec3;
+	vec3 = vec;
+
+	int size = vec.size();
+	size_t max_size = vec.max_size();
+	vec.resize(10);
+	int space = vec.capacity();
+	Test tmp1 = vec[1];
+	tmp1 = vec.front();
+	tmp1 = vec.back();
+	vec.erase(vec.begin() + 2);
+	vec.swap(vec2);
+
+	
+
+	vec3.clear();
+	vec4.clear();
 	return 0;
 }
