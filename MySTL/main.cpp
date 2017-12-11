@@ -1,5 +1,6 @@
 
 #include "vector.h"
+#include "list.h"
 #include <stdio.h>
 #include <vector>
 
@@ -31,7 +32,7 @@ private:
 
 int main()
 {
-	BA::vector<Test> vec;
+	/*BA::vector<Test> vec;
 
 	int arr[5] = { 1,2,3,4,5 };
 	std::vector<Test> vec4;
@@ -83,6 +84,22 @@ int main()
 	
 
 	vec3.clear();
-	vec4.clear();
+	vec4.clear();*/
+
+	Test test[5];
+	int arr[5] = { 1,2,3,4,5 };
+	for (int i = 0; i < 5; ++i)
+	{
+		Test tmp;
+		tmp.SetData(arr, 5);
+		test[i] = tmp;
+	}
+
+	BA::list<Test> list;
+	BA::list<Test> list1(test, test + 5);
+	BA::list<Test> list2(list1.begin(), list1.end());
+	BA::list<Test> list3(5);
+	BA::list<Test> list4(list2);
+
 	return 0;
 }

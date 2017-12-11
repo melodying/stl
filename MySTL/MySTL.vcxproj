@@ -117,6 +117,7 @@
     <ClInclude Include="alloc.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="construct.h" />
+    <ClInclude Include="list.h" />
     <ClInclude Include="uninitialized.h" />
     <ClInclude Include="vector.h" />
   </ItemGroup>
