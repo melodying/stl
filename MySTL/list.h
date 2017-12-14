@@ -52,7 +52,7 @@ public:
 
 	_Self& operator++()
 	{
-		this->_M_decr();
+		this->_M_incr();
 		return *this;
 	}
 
@@ -145,6 +145,20 @@ protected:
 		return _p;
 	}
 
+	void _M_transfer(iterator _pos, iterator _first, iterator _last)
+	{
+		if (_pos != _last)
+		{
+			_last._m_node->_m_prev->_m_next = _pos._m_node;
+			_first._m_node->_m_prev->_m_next = _last._m_node;
+			_pos._m_node->_m_prev->_m_next = _first._m_node;
+
+			_List_node_base *_tmp = _pos._m_node->_m_prev;
+			_pos._m_node->_m_prev = _last._m_node->_m_prev;
+			_last._m_node->_m_prev = _first._m_node->_m_prev;
+			_first._m_node->_m_prev = _tmp;
+		}
+	}
 
 public:
 	list()
@@ -222,7 +236,7 @@ public:
 		return _m_head == _m_head->_m_next;
 	}
 
-	size_type size()const
+	size_type size()
 	{
 		iterator _it = begin();
 		size_type _result = 0;
@@ -307,13 +321,13 @@ public:
 	iterator erase(iterator _pos)
 	{
 		_List_node_base *_next_node = _pos._m_node->_m_next;
-		_List_node_base *_prev_node = _pos._m_node->_m_prve;
+		_List_node_base *_prev_node = _pos._m_node->_m_prev;
 		_Node *_tmp = (_Node*)_pos._m_node;
 		_prev_node->_m_next = _next_node;
 		_next_node->_m_next = _prev_node;
 		destroy(&_tmp->_m_data);
 		_M_put_node(_tmp);
-		return iterator((_Node)_next_node);
+		return iterator((_Node*)_next_node);
 	}
 	iterator erase(iterator _first, iterator _last)
 	{
@@ -369,9 +383,135 @@ public:
 		return *this;
 	}
 
+	void assign(size_type _n, const_reference _val);
+	void swap(list<_Tp, _Alloc>& _x)
+	{
+		_Node *tmp = _m_head;
+		 _m_head = _x._m_head;
+		 _x._m_head = tmp;
+	}
+
+	void remove(const_reference _val)
+	{
+		iterator _first = begin();
+		iterator _last = end();
+		while (_first != _last)
+		{
+			iterator _next = _first;
+			++_next;
+			if (*_first == _val)
+				erase(_first);
+
+			_first = _next;
+		}
+	}
+
+	void unique()
+	{
+		iterator _first = begin();
+		iterator _last = end();
+		if (_first == _last)
+			return;
+
+		iterator _next = _first;
+		while (++_next != _last)
+		{	
+			if (*_next == *_first)
+				erase(_next);
+			else
+			{
+				_first = _next;
+				_next = _first;
+			}
+		}
+	}
+
+	void merge(list<_Tp, _Alloc> &_x)
+	{
+		iterator _first1 = begin();
+		iterator _last1 = end();
+		iterator _first2 = _x.begin();
+		iterator _last2 = _x.end();
+
+		while (_first1 != _last1 && _first2 != _last2)
+		{
+			if (*_first2 < *_first1)
+			{
+				iterator _next = _first2;
+				_M_transfer(_first1, _first2, ++_next);
+				_first2 = _next;
+			}
+			else
+				++_first1;
+		}
+		if (_first2 != _last2)
+			_M_transfer(_last1, _first2, _last2);
+	}
+
+	void splice(iterator _pos, list<_Tp, _Alloc>& _x)
+	{
+		if (!_x.empty())
+			_M_transfer(_pos, _x.begin(), _x.end());
+	}
+
+	void splice(iterator _pos, list<_Tp, _Alloc> &, iterator _i)
+	{
+		iterator _tmp = _i;
+		++_tmp;
+		if(_pos == _i || _pos == _tmp)
+			return;
+
+		_M_transfer(_pos, _i, _tmp);
+	}
+
+	void splice(iterator _pos, list&, iterator _first, iterator _last)
+	{
+		if (_first != _last)
+			_M_transfer(_pos, _first, _last);
+	}
+
+	void sort()
+	{
+		if (!empty() && size() != 1)
+		{
+			list<_Tp, _Alloc> _carry;
+			list<_Tp, _Alloc> _counter[64];
+			int _fill = 0;
+			while (!empty())
+			{
+				_carry.splice(_carry.begin(), *this, begin());
+				int _i = 0;
+				while (_i < _fill && !_counter[_i].empty())
+				{
+					_counter[_i].merge(_carry);
+					_carry.swap(_counter[_i++]);
+				}
+				_carry.swap(_counter[_i]);
+				if (_i == _fill)
+					++_fill;
+			}
+			for (int _i = 1; _i < _fill; ++_i)
+				_counter[_i].merge(_counter[_i - 1]);
+
+			swap(_counter[_fill - 1]);
+		}
+	}
+
 };
 
+template <typename _Tp, typename _Alloc>
+void list<_Tp, _Alloc>::assign(size_type _n, const_reference _val)
+{
+	iterator _it = begin();
+	for (; _it != end() && _n > 0; ++_it, --_n)
+		*_it = _val;
+
+	if (_n > 0)
+		insert(end(), _n, _val);
+	else
+		erase(_it, end());
+}
 
 
-NAMESPACE_END
+	NAMESPACE_END
 #endif//!_LIST_H_
