@@ -28,7 +28,7 @@ template <class _ForwardIterator>
 void destroy(_ForwardIterator _first, _ForwardIterator _last)
 {
 	for (; _first != _last; ++_first)
-		destroy(_first);
+		destroy(&*_first); //*_first调用这个迭代器的op*()
 }
 
 NAMESPACE_END

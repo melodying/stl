@@ -31,6 +31,14 @@ _ForwardIter uninitialized_copy(_InputIter _first, _InputIter _last, _ForwardIte
 	return _cur;
 }
 
+template<typename _ForwardIter, typename _Tp>
+void uninitialized_fill(_ForwardIter _first, _ForwardIter _last, const _Tp& _val)
+{
+	_ForwardIter _cur = _first;
+	for (; _cur != _last; ++_cur)
+		construct(_cur, _val);
+}
+
 
 NAMESPACE_END
 
