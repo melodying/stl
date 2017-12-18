@@ -1,3 +1,31 @@
+/*
+*
+* Copyright (c) 1994
+* Hewlett-Packard Company
+*
+* Permission to use, copy, modify, distribute and sell this software
+* and its documentation for any purpose is hereby granted without fee,
+* provided that the above copyright notice appear in all copies and
+* that both that copyright notice and this permission notice appear
+* in supporting documentation.  Hewlett-Packard Company makes no
+* representations about the suitability of this software for any
+* purpose.  It is provided "as is" without express or implied warranty.
+*
+*
+* Copyright (c) 1997
+* Silicon Graphics Computer Systems, Inc.
+*
+* Permission to use, copy, modify, distribute and sell this software
+* and its documentation for any purpose is hereby granted without fee,
+* provided that the above copyright notice appear in all copies and
+* that both that copyright notice and this permission notice appear
+* in supporting documentation.  Silicon Graphics makes no
+* representations about the suitability of this software for any
+* purpose.  It is provided "as is" without express or implied warranty.
+*/
+
+
+
 #ifndef _DEQUE_H_
 #define _DEQUE_H_
 
@@ -324,6 +352,88 @@ public:
 			_M_deallocate_map(_m_map);
 		}
 	}
+
+public:
+	void push_back(const value_type& _val)
+	{
+		if (_m_finish._m_cur != _m_finish._m_last - 1)
+		{
+			construct(_m_finish._m_cur, _val);
+			++_m_finish._m_cur;
+		}
+		else
+		{
+			_M_push_back_aux(_val);
+		}
+	}
+
+	void push_back()
+	{
+		push_back(_Tp());
+	}
+
+	void push_front(const value_type &_val)
+	{
+		if(_m_start._m_cur != _m_start._m_first)
+		{
+			construct(_m_start._m_cur - 1, _val);
+			--_m_start._m_cur;
+		}
+		else
+		{
+			_M_push_front_aux(_val);
+		}
+	}
+	void push_front()
+	{
+		push_front(_Tp());
+	}
+
+	void pop_back()
+	{
+		if (_m_finish._m_cur != _m_finish._m_first)
+		{
+			--_m_finish._m_cur;
+			destroy(_m_finish._m_cur);
+		}
+		else
+		{
+			_M_pop_back_aux();
+		}
+	}
+
+	void pop_front()
+	{
+		if (_m_start._m_cur != _m_start._m_last - 1)
+		{
+			destroy(_m_start._m_cur);
+			++_m_start._m_cur;
+		}
+		else
+		{
+			_M_pop_front_aux();
+		}
+	}
+
+protected:
+	void _M_push_back_aux(const value_type&_val);
+	void _M_push_front_aux(const value_type &_val);
+	void _M_pop_back_aux();
+	void _M_pop_front_aux();
+
+protected://对map和node空间的重新分配
+	void _M_reserve_map_at_back(size_type _node_to_add = 1)
+	{
+		if (_node_to_add + 1 > _m_map_size - (_m_finish._m_node - _m_map))
+			_M_reallocate_map(_node_to_add, false);
+	}
+	void _M_reserve_map_at_front(size_type _node_to_add = 1)
+	{
+		if (_node_to_add > size_type(_m_start._m_node - _m_map))
+			_M_reallocate_map(_node_to_add, true);
+	}
+
+	void _M_reallocate_map(size_type _node_to_add, bool _add_at_front);
 };
 
 template <typename _Tp, typename _Alloc>
@@ -369,6 +479,81 @@ void deque<_Tp, _Alloc>::_M_fill_initialize(const_reference _value)
 		uninitialized_fill(*_cur, *_cur + _S_buffer_size(), _value);
 	
 	uninitialized_fill(_m_finish._m_first, _m_finish._m_cur, _value);
+}
+
+template <typename _Tp, typename _Alloc>
+void deque<_Tp, _Alloc>::_M_push_back_aux(const value_type& _val)
+{
+	_M_reserve_map_at_back();
+
+	*(_m_finish._m_node + 1) = _M_allocate_node();
+
+	construct(_m_finish._m_node + 1, _val);
+	_m_finish._M_set_node(_m_finish._m_node + 1);
+	_m_finish._m_cur = _m_finish._m_first;
+}
+
+template <typename _Tp, typename _Alloc>
+void deque<_Tp, _Alloc>::_M_push_front_aux(const value_type& _val)
+{
+	_M_reserve_map_at_front();
+	*(_m_start._m_node - 1) = _M_allocate_node();
+	_m_start._M_set_node(_m_start._m_node - 1);
+	_m_start._m_cur = _m_start._m_last - 1;
+	construct(_m_start._m_cur, _val);
+}
+
+template <typename _Tp, typename _Alloc>
+void deque<_Tp, _Alloc>::_M_pop_back_aux()
+{
+	_M_deallocate_node(_m_finish._m_first);
+	_m_finish._M_set_node(_m_finish._m_node - 1);
+	_m_finish._m_cur = _m_finish._m_last - 1;
+	destroy(_m_finish._m_cur);
+}
+
+template <typename _Tp, typename _Alloc>
+void deque<_Tp, _Alloc>::_M_pop_front_aux()
+{
+	destroy(_m_start._m_cur);
+	_M_deallocate_node(_m_start._m_first);
+	_m_start._M_set_node(_m_start._m_node + 1);
+	_m_start._m_cur = _m_start._m_first;
+}
+
+	template <typename _Tp, typename _Alloc>
+void deque<_Tp, _Alloc>::_M_reallocate_map(size_type _node_to_add, bool _add_at_front)
+{
+	size_type _old_num_nodes = _m_finish._m_node - _m_start._m_node + 1;
+	size_type _new_num_nodes = _old_num_nodes + _node_to_add;
+
+	_map_pointer _new_start;
+	if (_m_map_size > 2 * _new_num_nodes)
+	{
+		_new_start = _m_map + (_m_map_size - _new_num_nodes) / 2 + (_add_at_front ? _node_to_add : 0);
+
+		if (_new_start < _m_start._m_node)
+			copy(_m_start._m_node, _m_finish._m_node + 1, _new_start);
+		else
+			copy_backward(_m_start._m_node, _m_finish._m_node + 1, _new_start + _old_num_nodes);
+	}
+	else//当map中的空间被占用超过一半时，会重新分配map
+	{
+		size_type _new_map_size = _m_map_size + 
+			(_m_map_size > _node_to_add ? _m_map_size : _node_to_add) + 2;
+
+		_map_pointer _new_map = _M_allocate_map(_new_map_size);
+		_new_start = _new_map + (_new_map_size - _new_num_nodes) / 2 +
+			(_add_at_front ? _node_to_add : 0);
+
+		copy(_m_start._m_node, _m_finish._m_node + 1, _new_start);
+		_M_deallocate_map(_m_map, _m_map_size);
+
+		_m_map = _new_map;
+		_m_map_size = _new_map_size;
+	}
+	_m_start._M_set_node(_new_start);
+	_m_finish._M_set_node(_new_start + _old_num_nodes - 1);
 }
 
 NAMESPACE_END
