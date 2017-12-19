@@ -12,11 +12,12 @@ class Test
 public:
 	Test()
 	{
-		index = 0;
+		_len = 5;
 		memset(data, 0, 40);
 	}
 	void SetData(int *arr, int len)
 	{
+		_len = len;
 		for (int i = 0; i < len; ++i)
 		{
 			data[i] = arr[i];
@@ -26,9 +27,18 @@ public:
 	{
 		return data[index];
 	}
+
+	void Print()
+	{
+		for (int i = 0; i < _len; ++i)
+		{
+			printf("%d ", data[i]);
+		}
+		printf("\n");
+	}
 private:
 	int data[10];
-	int index;
+	int _len;
 };
 
 
@@ -150,10 +160,26 @@ void VectorTest()
 
 void DequeTest()
 {
-	BA::deque<int> deque(10, 5);
-	for (int i = 0; i < 10; ++i)
-		printf("%d ", deque[i]);
+	Test test;
+	Test t1[10];
+	int arr[5] = { 1,2,3,4,5 };
+	test.SetData(arr, 5);
+	BA::deque<Test> deque(5, test);
 
+	for (int i = 0; i < deque.size(); ++i)
+		deque[i].Print();
+
+	
+	deque.push_front();
+	for (int i = 0; i < deque.size(); ++i)
+		deque[i].Print();
+
+	const BA::deque<Test> deque1;
+
+
+	deque.insert(deque.begin() + 2, test);
+	deque.insert(deque.begin() + 1, 10, test);
+	deque.insert(deque.begin(), deque1.begin(), deque1.end());
 }
 
 int main()
@@ -162,6 +188,6 @@ int main()
 	//ListTest();
 
 	DequeTest();
-
+	std::deque<int> de;
 	return 0;
 }
