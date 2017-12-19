@@ -42,7 +42,7 @@ _ForwardIter uninitialized_fill_n(_ForwardIter _first, _Size _n, const _Tp& _val
 {
 	_ForwardIter _cur = _first;
 	for (; _n > 0; --_n, ++_cur)
-		construct(_cur, _val);
+		construct(&*_cur, _val);
 
 	return _cur;
 }
@@ -54,7 +54,7 @@ _ForwardIter uninitialized_copy(_InputIter _first, _InputIter _last, _ForwardIte
 
 	for(; _first != _last; ++_first, ++_cur)
 	{
-		construct(_cur, *_first);
+		construct(&*_cur, *_first);
 	}
 	return _cur;
 }
@@ -64,7 +64,7 @@ void uninitialized_fill(_ForwardIter _first, _ForwardIter _last, const _Tp& _val
 {
 	_ForwardIter _cur = _first;
 	for (; _cur != _last; ++_cur)
-		construct(_cur, _val);
+		construct(&*_cur, _val);
 }
 
 

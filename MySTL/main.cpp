@@ -2,10 +2,12 @@
 #include "vector.h"
 #include "list.h"
 #include "deque.h"
-#include <deque>
+#include "stack.h"
+#include "queue.h"
+
 #include <stdio.h>
 #include <vector>
-#include <list>
+
 
 class Test
 {
@@ -174,12 +176,54 @@ void DequeTest()
 	for (int i = 0; i < deque.size(); ++i)
 		deque[i].Print();
 
-	const BA::deque<Test> deque1;
-
+	const BA::deque<Test> de;
+	BA::deque<Test>::const_iterator it(de.begin());
 
 	deque.insert(deque.begin() + 2, test);
 	deque.insert(deque.begin() + 1, 10, test);
-	deque.insert(deque.begin(), deque1.begin(), deque1.end());
+	deque.insert(deque.begin(), it,it + 1);
+	deque.insert(deque.begin(), deque.begin(), deque.end());
+}
+
+
+void StackTest()
+{
+	BA::stack<int> s;
+	BA::stack<int> s1;
+	s.push(1);
+	s.pop();
+	s.top();
+	s.empty();
+	s.size();
+	if (s == s1)
+	{
+
+	}
+	if (s < s1)
+	{
+
+	}
+}
+
+void QueueTest()
+{
+	BA::queue<int> s;
+	BA::queue<int> s1;
+	s.push(1);
+	s.pop();
+	
+	s.empty();
+	s.size();
+
+	if(s == s1)
+	{
+		
+	}
+	if(s < s1)
+	{
+		
+	}
+	
 }
 
 int main()
@@ -187,7 +231,9 @@ int main()
 	//VectorTest();
 	//ListTest();
 
-	DequeTest();
-	std::deque<int> de;
+	//DequeTest();
+	
+	StackTest();
+	
 	return 0;
 }

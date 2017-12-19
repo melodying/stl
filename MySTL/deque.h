@@ -51,11 +51,11 @@ inline size_t _Deque_buf_size(size_t _size)
 }
 
 template<typename _Tp, typename _Ref, typename _Ptr>
-class _Deque_iterater
+class _Deque_iterator
 {
 public:
-	typedef _Deque_iterater<_Tp, _Tp, _Tp> iterater;
-	typedef _Deque_iterater<_Tp, const _Tp&, const _Tp*> const_iterator;
+	typedef _Deque_iterator<_Tp, _Tp&, _Tp*> iterator;
+	typedef _Deque_iterator<_Tp, const _Tp&, const _Tp*> const_iterator;
 	
 	typedef _Tp value_type;
 	typedef _Ref reference;
@@ -64,7 +64,7 @@ public:
 	typedef int difference_type;
 	typedef _Tp** _Map_pointer;
 
-	typedef _Deque_iterater _Self;
+	typedef _Deque_iterator _Self;
 	static size_type _S_buffer_size()
 	{
 		return _Deque_buf_size(sizeof(_Tp));
@@ -76,19 +76,21 @@ public:
 	_Map_pointer _m_node;	// 指向当前node所在map中的位置
 
 
-	_Deque_iterater(_Tp *_x, _Map_pointer _y):_m_cur(_x), _m_first(*_y),
+	_Deque_iterator(_Tp *_x, _Map_pointer _y):_m_cur(_x), _m_first(*_y),
 		_m_last(*_y + _S_buffer_size()),_m_node(_y)
 	{
 	}
-	_Deque_iterater():_m_cur(nullptr), _m_first(nullptr), _m_last(nullptr), _m_node(nullptr){}
-	_Deque_iterater(const iterater&_x):_m_cur(_x._m_cur), _m_first(_x._m_first),
+	_Deque_iterator():_m_cur(nullptr), _m_first(nullptr), _m_last(nullptr), _m_node(nullptr){}
+
+	_Deque_iterator(const iterator&_x)
+		:_m_cur(_x._m_cur), _m_first(_x._m_first),
 		_m_last(_x._m_last), _m_node(_x._m_node){}
 
-	reference operator*()
+	reference operator*()const
 	{
 		return *_m_cur;
 	}
-	pointer operator->()
+	pointer operator->()const
 	{
 		return &(operator*());
 	}
@@ -162,7 +164,7 @@ public:
 	{
 		return *this += -_n;
 	}
-	_Self operator-(difference_type _n)
+	_Self operator-(difference_type _n)const
 	{
 		_Self _tmp = *this;
 		return _tmp -= _n;
@@ -172,28 +174,28 @@ public:
 	{
 		return *(*this + _index);
 	}
-	bool operator==(const _Self& _x)
+	bool operator==(const _Self& _x)const
 	{
 		return _m_cur == _x._m_cur;
 	}
-	bool operator!=(const _Self&_x)
+	bool operator!=(const _Self&_x)const
 	{
 		return !(*this == _x);
 	}
 
-	bool operator<(const _Self& _x)
+	bool operator<(const _Self& _x)const
 	{
 		return (_m_node == _x._m_node) ? (_m_cur < _x._m_cur) : (_m_node < _x._m_node);
 	}
-	bool operator>(const _Self&_x)
+	bool operator>(const _Self&_x)const
 	{
 		return _x < *this;
 	}
-	bool operator<=(const _Self &_x)
+	bool operator<=(const _Self &_x)const
 	{
 		return !(_x < *this);
 	}
-	bool operator>=(const _Self &_x)
+	bool operator>=(const _Self &_x)const
 	{
 		return !(*this < _x);
 	}
@@ -219,8 +221,8 @@ public:
 	typedef size_t size_type;
 	typedef int difference_type;
 
-	typedef _Deque_iterater<_Tp, _Tp&, _Tp*> iterator;
-	typedef _Deque_iterater<_Tp, const _Tp&, const _Tp*> const_iterator;
+	typedef _Deque_iterator<_Tp, _Tp&, _Tp*> iterator;
+	typedef _Deque_iterator<_Tp, const _Tp&, const _Tp*> const_iterator;
 
 protected:
 	typedef pointer* _map_pointer; 
@@ -324,7 +326,7 @@ public:
 		--_tmp;
 		return *_tmp;
 	}
-	bool empty()
+	bool empty()const
 	{
 		return _m_start == _m_finish;
 	}
@@ -775,12 +777,12 @@ void deque<_Tp, _Alloc>::_M_insert_aux(iterator _pos, const_iterator _first, con
 {
 	const difference_type _elems_before = _pos - _m_start;
 	size_type _length = size();
-	if (_elems_before < _length / 2)
+	if (_elems_before < difference_type(_length / 2))
 	{
 		iterator _new_start = _M_reserve_elements_at_front(_n);
 		iterator _old_start = _m_start;	
 		_pos = _m_start + _elems_before;
-		if(_elems_before >= _n)
+		if(_elems_before >= difference_type(_n))
 		{
 			iterator _start_n = _m_start + _n;
 			uninitialized_copy(_m_start, _start_n, _new_start);
@@ -805,7 +807,7 @@ void deque<_Tp, _Alloc>::_M_insert_aux(iterator _pos, const_iterator _first, con
 		const difference_type _elems_after = _length - _elems_before;
 		_pos = _m_finish - _elems_after;
 
-		if (_elems_after > _n)
+		if (_elems_after >difference_type(_n))
 		{
 			iterator _finish_n = _m_finish - difference_type(_n);
 			uninitialized_copy(_finish_n, _m_finish, _m_finish);
@@ -924,6 +926,46 @@ void deque<_Tp, _Alloc>::clear()
 	}
 	_m_finish = _m_start;
 }
+
+
+template<typename _Tp, typename _Alloc>
+bool operator==(const deque<_Tp, _Alloc> &_x,
+				const deque<_Tp, _Alloc> &_y)
+{
+	if (_x.size() == _y.size())
+	{
+		typename deque<_Tp, _Alloc>::const_iterator it1 = _x.begin();
+		typename deque<_Tp, _Alloc>::const_iterator it2 = _x.begin();
+		for (; it1 != _x.end(); ++it1, ++it2)
+		{
+			if(*it1 != *it2)
+				return false;
+		}
+		return true;
+	}
+
+	return false;
+}
+
+template<typename _Tp, typename _Alloc>
+bool operator<(const deque<_Tp, _Alloc> &_x,
+				const deque<_Tp, _Alloc> &_y)
+{
+	typename deque<_Tp, _Alloc>::const_iterator it1 = _x.begin();
+	typename deque<_Tp, _Alloc>::const_iterator it2 = _y.begin();
+
+	for (; it1 != _x.end() && it2 != _y.end(); ++it1, ++it2)
+	{
+		if (*it1 < *it2)
+			return true;
+		if(*it2 < *it1)
+			return false;
+	}
+	return it1 == _x.end() && it2 != _y.end();
+}
+
+
+
 
 NAMESPACE_END
 
