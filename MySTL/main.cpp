@@ -4,10 +4,13 @@
 #include "deque.h"
 #include "stack.h"
 #include "queue.h"
+#include "tree.h"
+#include "set.h"
+#include "map.h"
 
 #include <stdio.h>
 #include <vector>
-
+#include <map>
 
 class Test
 {
@@ -37,6 +40,11 @@ public:
 			printf("%d ", data[i]);
 		}
 		printf("\n");
+	}
+
+	bool operator<(const Test &_t)const
+	{
+		return _len < _t._len;
 	}
 private:
 	int data[10];
@@ -226,6 +234,68 @@ void QueueTest()
 	
 }
 
+void TreeTest()
+{
+
+	BA::_Rb_tree<int, int, int , int> tree;
+	//tree.find(1);
+}
+
+
+void setTest()
+{
+	Test test[5];
+	int arr[5] = { 1,2,3,4,5 };
+	for (int i = 0; i < 5; ++i)
+	{
+		Test tmp;
+		tmp.SetData(arr, 5);
+		test[i] = tmp;
+	}
+	
+	BA::set<Test> s;
+	s.begin();
+	s.end();
+	s.clear();
+	for (int i = 0; i < 5; ++i)
+	{
+		s.insert(test[i]);
+	}
+
+	printf("%d\n", s.count(test[2]));
+	
+}
+
+void mapTest()
+{
+	Test test[5];
+	int arr[5] = { 1,2,3,4,5 };
+	for (int i = 0; i < 5; ++i)
+	{
+		Test tmp;
+		tmp.SetData(arr, 5);
+		test[i] = tmp;
+	}
+
+	BA::map<char, Test> m;
+
+	for (int i = 0; i < 5; ++i)
+	{
+		const char c = i + '0';
+		// TODO: map的插入bug。又一个由const引发的错误
+		// 在map中的value_type的key应为const。因为构造的pair中的key并不是const。造成无法插入
+		// 如果将构造的pair中的first_type设置为const。make_pair()无法工作
+		// 如果使用pair的拷贝构造则没有问题。问题应该是出在const的成员变量只能初始化。无法赋值
+		
+		// 需要手动构造const first_type的pair。使用起来不够友好
+		BA::pair<const char, Test> pair(c, test[i]);
+		
+		m.insert(pair);
+	}
+
+	m['0'].Print();
+}
+
 int main()
 {
 	//VectorTest();
@@ -233,7 +303,9 @@ int main()
 
 	//DequeTest();
 	
-	StackTest();
+	//StackTest();i
+	mapTest();
+
 	
 	return 0;
 }

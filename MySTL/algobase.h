@@ -72,5 +72,13 @@ _BidirectionalIter2 copy_backward(_BidirectionalIter1 _first, _BidirectionalIter
 	return _result;
 }
 
+template<typename _Tp>
+void swap(_Tp &_x, _Tp _y)
+{
+	_Tp _tmp = _x;
+	_x = _y;
+	_y = _tmp;
+}
+
 NAMESPACE_END
 #endif//~_ALGOBASE_H_
