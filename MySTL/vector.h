@@ -160,7 +160,7 @@ public:
 		}
 	}
 
-	void resize(size_type _new_size, value_type &val = value_type())
+	void resize(size_type _new_size, const value_type &val)
 	{
 		if (_new_size < size())
 			erase(begin() + _new_size, end());
@@ -168,6 +168,11 @@ public:
 		{
 			insert(end(), _new_size - size(), val);
 		}
+	}
+
+	void resize(size_type _new_size)
+	{
+		resize(_new_size, _Tp());
 	}
 
 	void reserve(size_type _n)
@@ -313,7 +318,7 @@ public:
 		}
 	}
 
-	void push_back(value_type &_val)
+	void push_back(const value_type &_val)
 	{
 		insert(end(), _val);
 	}

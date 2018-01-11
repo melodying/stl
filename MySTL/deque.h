@@ -57,6 +57,7 @@ public:
 	typedef _Deque_iterator<_Tp, _Tp&, _Tp*> iterator;
 	typedef _Deque_iterator<_Tp, const _Tp&, const _Tp*> const_iterator;
 	
+	typedef random_access_iterator_tag iterator_category;
 	typedef _Tp value_type;
 	typedef _Ref reference;
 	typedef _Ptr pointer;

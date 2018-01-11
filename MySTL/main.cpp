@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <vector>
 #include <map>
+#include <algorithm>
+#include "algorithm.h"
 
 class Test
 {
@@ -187,6 +189,7 @@ void DequeTest()
 	const BA::deque<Test> de;
 	BA::deque<Test>::const_iterator it(de.begin());
 
+	
 	deque.insert(deque.begin() + 2, test);
 	deque.insert(deque.begin() + 1, 10, test);
 	deque.insert(deque.begin(), it,it + 1);
@@ -304,8 +307,22 @@ int main()
 	//DequeTest();
 	
 	//StackTest();i
-	mapTest();
+	//printf("%d", 2 >> 1);
 
-	
+	BA::vector<int> vec1;
+	vec1.push_back(1);
+	vec1.push_back(3);
+	vec1.push_back(3);
+	vec1.push_back(1);
+	vec1.push_back(2);
+	vec1.push_back(2);
+	//auto it = BA::unique(vec1.begin(), vec1.end());
+	//vec1.resize(it - vec1.begin());
+	BA::sort(vec1.begin(), vec1.end());
+	BA::_inplace_stable_sort(vec1.begin(), vec1.end());
+	for (int i = 0; i < vec1.size(); ++i)
+	{
+		printf("%d", vec1[i]);
+	}
 	return 0;
 }
